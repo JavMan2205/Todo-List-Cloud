@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Todo List Cloud</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 5px solid #007bff; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Nube Todo List</h2>
+    <div class="input-group">
+        <input type="text" id="nuevaTarea" placeholder="Escribe una tarea nueva...">
+        <button onclick="agregarTarea()">Agregar</button>
+    </div>
+    <ul id="listaTareas"></ul>
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:8000"; 
+
+    async function cargarTareas() {
+        try {
+            const res = await fetch(`${API_URL}/tareas`);
+            const tareas = await res.json();
+            const lista = document.getElementById("listaTareas");
+            lista.innerHTML = "";
+            
+            tareas.forEach(tarea => {
+                const li = document.createElement("li");
+                li.textContent = tarea.titulo;
+                lista.appendChild(li);
+            });
+        } catch (error) {
+            console.error("Error cargando tareas:", error);
+        }
+    }
+
+    async function agregarTarea() {
+        const input = document.getElementById("nuevaTarea");
+        const titulo = input.value.trim();
+        
+        if (!titulo) return;
+
+        try {
+            const res = await fetch(`${API_URL}/tareas`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ titulo: titulo })
+            });
+
+            if (res.ok) {
+                input.value = "";
+                cargarTareas(); // Recargar la lista
+            }
+        } catch (error) {
+            console.error("Error agregando tarea:", error);
+        }
+    }
+
+    window.onload = cargarTareas;
+</script>
+</body>
+</html>
